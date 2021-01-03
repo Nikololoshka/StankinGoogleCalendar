@@ -52,4 +52,5 @@ def export_to_google_calendar_file(service, file: str, name: str, current_calend
     if not exist:
         calendar = create_calendar(service, name)
 
-
+    for event in schedule.events():
+        print(event)

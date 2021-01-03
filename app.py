@@ -17,8 +17,21 @@ if __name__ == '__main__':
     # r = get_all_calendars(service)
     # pretty_print(r)
 
-    r = get_all_events(service, '42d8qc3alsq0tb484rv5nhuilk@group.calendar.google.com')
+    ids = '42d8qc3alsq0tb484rv5nhuilk@group.calendar.google.com'
+    r = get_all_events(service, ids)
     pretty_print(r)
+
+    for e in r:
+        remove_event(service, ids, e['id'])
+
+    r = get_all_events(service, ids)
+    pretty_print(r)
+
+    schedule = Schedule('test-data/ИДБ-17-09.json')
+    for i, event in enumerate(schedule.events()):
+        r = create_event(service, ids, event)
+        print(i)
+        # time.sleep(0.1)
 
     # delete calendar
     # response = service.calendars().delete(calendarId='thj9c06um55bmr51qat71dvabc@group.calendar.google.com').execute()
@@ -39,4 +52,3 @@ if __name__ == '__main__':
     #        pretty_print(calendar)
 
     # export_to_google_calendar_dir(service, './test-data')
-

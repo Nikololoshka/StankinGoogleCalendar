@@ -1,10 +1,10 @@
 """
 Классы и функции для работы с расписанием.
 """
-
 import json
+from datetime import datetime
 
-from schedule.helper import convert_to_rfc_datetime, default_time_zone
+from schedule.helper import convert_to_rfc_datetime, default_time_zone, convert_to_rfc_until_date
 
 
 class Schedule:
@@ -54,8 +54,8 @@ class Pair:
         """
         for date in self.dates:
             event = {
-                'summary': self.title,
-                'location': self.classroom,
+                'summary': f'{self.title}. {self._type()}',
+                'location': f'{self.classroom} {self.lecturer}'.strip(),
                 'start': {
                     'dateTime': convert_to_rfc_datetime(date.start_date(), self.time_start),
                     'timeZone': default_time_zone()
@@ -67,6 +67,16 @@ class Pair:
                 'recurrence': date.recurrence()
             }
             yield event
+
+    def _type(self):
+        if self.type == 'Lecture':
+            return 'Лекция'
+        elif self.type == 'Seminar':
+            return 'Семинар'
+        elif self.type == 'Laboratory':
+            return 'Лабораторные занятия'
+
+        raise Exception(f'Неизвестный тип: {self.type}')
 
 
 class Date:
@@ -91,4 +101,27 @@ class Date:
         """
         Возвращает переодичность события для календаря.
         """
-        pass
+        if self.frequency == 'once':
+            return []
+        else:
+            until, day = self._generate_rrule()
+
+            if self.frequency == 'every':
+                return [
+                    f'RRULE:FREQ=WEEKLY;UNTIL={until};BYDAY={day}'
+                ]
+            elif self.frequency == 'throughout':
+                return [
+                    f'RRULE:FREQ=WEEKLY;UNTIL={until};INTERVAL=2;BYDAY={day}'
+                ]
+
+        raise Exception(f'Неизвестная периодичность: {self.frequency}')
+
+    def _generate_rrule(self):
+        """
+        Генерирует данные для задания периодичность (RRULE).
+        """
+        end = datetime.strptime(self.date.split('-')[1], '%Y.%m.%d')
+        until = convert_to_rfc_until_date(end.replace(hour=23, minute=59, second=59))
+        day = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'][end.weekday()]
+        return until, day

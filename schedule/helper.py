@@ -2,7 +2,7 @@
 Вспомогательный модуль для работы с Google Calendar API.
 """
 
-import datetime
+from datetime import datetime
 import json
 
 
@@ -44,8 +44,12 @@ def remove_calendar():
     pass
 
 
-def get_event():
-    pass
+def create_event(service, calendar_id: str, event: dict):
+    return service.events().insert(calendarId=calendar_id, body=event).execute()
+
+
+def remove_event(service, calendar_id: str, event_id: str):
+    return service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
 
 
 def get_all_events(service, calendar_id: str):
@@ -81,7 +85,7 @@ def auto_description():
     """
     Генерирует описание для Google календарей в формате 'Расписание МГТУ "СТАНКИН" на #Весна-2021'.
     """
-    now = datetime.date.today()
+    now = datetime.now().today()
     semester = 'Весна' if now.month < 6 else 'Осень'
     return f'Расписание МГТУ "СТАНКИН" на #{semester}-{now.year}'
 
@@ -104,7 +108,14 @@ def convert_to_rfc_datetime(date, time):
     """
     Конвертор даты в формат для Google Calendar API.
     """
-    return datetime.datetime.strptime(f'{date} {time}', '%Y.%m.%d %H:%M').isoformat()
+    return datetime.strptime(f'{date} {time}', '%Y.%m.%d %H:%M').isoformat()
+
+
+def convert_to_rfc_until_date(date: datetime):
+    """
+    Конвертор даты в формат для Google Calendar API.
+    """
+    return date.strftime('%Y%m%dT%H%M%S') + 'Z'
 
 
 def pretty_print(obj):
