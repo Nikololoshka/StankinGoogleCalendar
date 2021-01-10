@@ -36,19 +36,31 @@ def create_calendar(service, name: str, description: str = None, time_zone: str 
     return service.calendars().insert(body=request_body).execute()
 
 
-def update_calendar():
-    pass
+def update_calendar(service, calendar_id: str, body: dict):
+    """
+    Обновляет данные о календаре
+    """
+    return service.calendars().update(calendarId=calendar_id, body=body).execute()
 
 
-def remove_calendar():
-    pass
+def remove_calendar(service, calendar_id: str):
+    """
+    Удаляетт календаль и все его события.
+    """
+    return service.calendars().delete(calendarId=calendar_id).execute()
 
 
 def create_event(service, calendar_id: str, event: dict):
+    """
+    Создает новое событие в календаре.
+    """
     return service.events().insert(calendarId=calendar_id, body=event).execute()
 
 
 def remove_event(service, calendar_id: str, event_id: str):
+    """
+    Удаляет событие из календаря.
+    """
     return service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
 
 

@@ -6,7 +6,7 @@ import os
 import time
 
 from tqdm import tqdm
-from .helper import get_all_calendars, find_calendar, create_calendar
+from .helper import get_all_calendars, find_calendar, create_calendar, create_event
 from .schedule import Schedule
 
 
@@ -38,19 +38,19 @@ def export_to_google_calendar_files(service, files: list):
 
         export_to_google_calendar_file(service, file, name, current_calendars)
 
+    progress_tqdm.update(progress_tqdm.total)
+
 
 def export_to_google_calendar_file(service, file: str, name: str, current_calendars: list):
     """
     Экспортирует расписание в Google Calendar
     """
-
     calendar = find_calendar(current_calendars, name)
-    exist = calendar is None
+    exist = calendar is not None
 
     schedule = Schedule(file)
 
     if not exist:
         calendar = create_calendar(service, name)
-
-    for event in schedule.events():
-        print(event)
+        for event in schedule.events():
+            create_event(service, calendar['id'], event)

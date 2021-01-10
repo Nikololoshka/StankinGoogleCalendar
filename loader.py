@@ -4,6 +4,7 @@
 
 import os
 import pickle
+import time
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -37,5 +38,6 @@ def create_service(client_secret_file: str, api_name: str, api_version: str, sco
 
     service = build(api_name, api_version, credentials=cred)
     print(f'Calendar API {api_version} сервис успешно создан!')
+    time.sleep(1)
 
     return service
