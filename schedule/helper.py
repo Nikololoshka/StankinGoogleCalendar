@@ -11,17 +11,16 @@ def get_all_calendars(service):
     Возвращает список всех текущих календарей.
     """
     page_token = None
-    calendars = []
 
     while True:
         response = service.calendarList().list(pageToken=page_token).execute()
-        calendars += response['items']
+        for calendar in response['items']:
+            if 'МГТУ "СТАНКИН"' in calendar.get('description', ''):
+                yield calendar
 
         page_token = response.get('nextPageToken')
         if not page_token:
             break
-
-    return calendars
 
 
 def create_calendar(service, name: str, description: str = None, time_zone: str = None):
@@ -69,17 +68,15 @@ def get_all_events(service, calendar_id: str):
     Возвращает список всех событий календаря.
     """
     page_token = None
-    events = []
 
     while True:
         response = service.events().list(calendarId=calendar_id, pageToken=page_token).execute()
-        events += response['items']
+        for event in response['items']:
+            yield event
 
         page_token = response.get('nextPageToken')
         if not page_token:
             break
-
-    return events
 
 
 def find_calendar(calendars: list, name: str):

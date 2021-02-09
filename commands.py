@@ -41,6 +41,11 @@ def create_parser():
     export_parser_group.add_argument('-r', '--recursive', help='Рекурсивный поиск расписаний',
                                      action='store_true')
 
+    # просмотр расписаний
+    list_parser = subparsers.add_parser('ls', add_help=False)
+    list_parser_group = list_parser.add_argument_group(title='Параметры')
+    list_parser_group.add_argument('-h', '--help', action='help', help='Справка по использованию')
+
     return main_parser
 
 
@@ -64,3 +69,20 @@ def export_command(namespace):
                     paths.append(filename)
 
     export_to_google_calendar_files(service, paths)
+
+
+def list_command(namespace):
+    """
+    Выводит список всех расписаний в Google Calendar.
+    """
+    service = create_service(CLIENT_SECRET, API_NAME, API_VERSION, SCOPES)
+    for schedule in get_all_calendars(service):
+        print(f"Расписание: '{schedule['summary']}', id: '{schedule['id']}'")
+
+
+def test():
+    service = create_service(CLIENT_SECRET, API_NAME, API_VERSION, SCOPES)
+    r = get_all_calendars(service)
+
+    for s in r:
+        pretty_print(s)

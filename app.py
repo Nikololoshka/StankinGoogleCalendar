@@ -5,7 +5,7 @@ Google Calendar API docs:
 https://developers.google.com/resources/api-libraries/documentation/calendar/v3/python/latest/index.html
 https://developers.google.com/calendar/v3/reference
 """
-from commands import export_command, create_parser
+from commands import export_command, create_parser, list_command, test
 
 if __name__ == '__main__':
     parser = create_parser()
@@ -14,6 +14,10 @@ if __name__ == '__main__':
     cmd = namespace.command
     if cmd == 'export':
         export_command(namespace)
+    elif cmd == 'ls':
+        list_command(namespace)
+    else:
+        test()
 
     # service = create_service(CLIENT_SECRET, API_NAME, API_VERSION, SCOPES)
     #
