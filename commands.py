@@ -2,7 +2,7 @@
 Файл с обработчиком команд консоли.
 """
 import argparse
-import os
+import json
 
 from config import CLIENT_SECRET, API_NAME, API_VERSION, SCOPES
 from loader import create_service
@@ -45,6 +45,7 @@ def create_parser():
     list_parser = subparsers.add_parser('ls', add_help=False)
     list_parser_group = list_parser.add_argument_group(title='Параметры')
     list_parser_group.add_argument('-h', '--help', action='help', help='Справка по использованию')
+    list_parser_group.add_argument('-j', '--json', help='Экспортирует список расписаний в json')
 
     return main_parser
 
@@ -66,7 +67,7 @@ def export_command(namespace):
         else:
             for filename in os.listdir(path):
                 if filename.endswith('.json'):
-                    paths.append(filename)
+                    paths.append(os.path.join(path, filename))
 
     export_to_google_calendar_files(service, paths)
 
@@ -76,8 +77,21 @@ def list_command(namespace):
     Выводит список всех расписаний в Google Calendar.
     """
     service = create_service(CLIENT_SECRET, API_NAME, API_VERSION, SCOPES)
-    for schedule in get_all_calendars(service):
-        print(f"Расписание: '{schedule['summary']}', id: '{schedule['id']}'")
+
+    if namespace.json is not None:
+        with open(namespace.json, 'w', encoding='utf-8') as output:
+            schedules = []
+            for schedule in get_all_calendars(service):
+                schedules.append({
+                    'name': schedule['summary'],
+                    'link': create_shared_link(schedule['id'])
+                })
+
+            json.dump(schedules, output, ensure_ascii=False, indent=4)
+
+    else:
+        for schedule in get_all_calendars(service):
+            print(f"Расписание: '{schedule['summary']}', id: '{schedule['id']}'")
 
 
 def test():
@@ -86,3 +100,21 @@ def test():
 
     for s in r:
         pretty_print(s)
+        ids = s['id']
+        #pretty_print(acl_remove(service, ids, 'default'))
+
+        #rr = create_acl(service, s['id'])
+        #pretty_print(rr)
+
+        #
+        # calendar_list_entry = {
+        #     'id': ids
+        # }
+        # cr = service.calendarList().insert(body=calendar_list_entry).execute()
+        # print(cr)
+
+        # acls = acl_list(service, ids)['items']
+        # pretty_print(acls)
+        #
+        # print(f'https://calendar.google.com/calendar/embed?src={ids}')
+

@@ -42,9 +42,49 @@ def update_calendar(service, calendar_id: str, body: dict):
     return service.calendars().update(calendarId=calendar_id, body=body).execute()
 
 
+def give_public_access(service, calendar_id: str):
+    """
+    Выдает права общего доступа календарю.
+    """
+    acl_list = get_acl_list(service, calendar_id)
+    for acl_item in acl_list['items']:
+        if acl_item['id'] == 'default' and acl_item['role'] == 'reader':
+            return create_shared_link(calendar_id)
+
+    create_public_acl(service, calendar_id)
+    return create_shared_link(calendar_id)
+
+
+def create_public_acl(service, calendar_id: str):
+    """
+    Добавляет статус публичного доступа к календарю.
+    """
+    request_body = {
+        'scope': {
+            'type': 'default'
+        },
+        'role': 'reader'
+    }
+    return service.acl().insert(calendarId=calendar_id, body=request_body).execute()
+
+
+def get_acl_list(service, calendar_id: str):
+    """
+    Возвращает список всех правид доступа к календарю.
+    """
+    return service.acl().list(calendarId=calendar_id).execute()
+
+
+def remove_acl_rule(service, calendar_id: str, rule_id: str):
+    """
+    Удалчет правило доступа календаря.
+    """
+    return service.acl().delete(calendarId=calendar_id, ruleId=rule_id).execute()
+
+
 def remove_calendar(service, calendar_id: str):
     """
-    Удаляетт календаль и все его события.
+    Удаляет календаль и все его события.
     """
     return service.calendars().delete(calendarId=calendar_id).execute()
 
@@ -111,6 +151,13 @@ def default_time_zone():
 #     Конвертор даты в формат для Google Calendar API.
 #     """
 #     return datetime.datetime(year, month, day, hour, minute, 0).isoformat() + 'Z'
+
+
+def create_shared_link(calendar_id: str):
+    """
+    Возвращает ссылку на календарь для общего доступа.
+    """
+    return f'https://calendar.google.com/calendar/embed?src={calendar_id}'
 
 
 def convert_to_rfc_datetime(date, time):

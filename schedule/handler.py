@@ -6,7 +6,7 @@ import os
 import time
 
 from tqdm import tqdm
-from .helper import get_all_calendars, find_calendar, create_calendar, create_event
+from .helper import get_all_calendars, find_calendar, create_calendar, create_event, give_public_access
 from .schedule import Schedule
 
 
@@ -28,17 +28,11 @@ def export_to_google_calendar_files(service, files: list):
     Экспортирует список расписаний в Google Calendar.
     """
 
-    progress_tqdm = tqdm(total=len(files), position=0)
     current_calendars = get_all_calendars(service)
 
     for i, file in enumerate(files):
         name = os.path.basename(file)[:-5]
-        progress_tqdm.set_description(f'Экспорт расписания {name}')
-        progress_tqdm.update(i)
-
         export_to_google_calendar_file(service, file, name, current_calendars)
-
-    progress_tqdm.update(progress_tqdm.total)
 
 
 def export_to_google_calendar_file(service, file: str, name: str, current_calendars: list):
@@ -48,9 +42,15 @@ def export_to_google_calendar_file(service, file: str, name: str, current_calend
     calendar = find_calendar(current_calendars, name)
     exist = calendar is not None
 
-    schedule = Schedule(file)
+    progress_tqdm = tqdm(total=100, position=0, desc=f'Экспорт расписания {name}')
 
     if not exist:
+        schedule = Schedule(file)
         calendar = create_calendar(service, name)
-        for event in schedule.events():
+        for i, event in enumerate(schedule.events()):
             create_event(service, calendar['id'], event)
+            progress_tqdm.update(i)
+
+        give_public_access(service, calendar['id'])
+
+    progress_tqdm.update(progress_tqdm.total)
